@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
+  <reporter-output>
+  </reporter-output>
+  <suite started-at="2021-04-24T17:01:19 ICT" name="Default suite" finished-at="2021-04-24T17:01:36 ICT" duration-ms="17064">
+    <groups>
+    </groups>
+    <test started-at="2021-04-24T17:01:19 ICT" name="Default test" finished-at="2021-04-24T17:01:36 ICT" duration-ms="17064">
+      <class name="runner.TestRunner">
+        <test-method is-config="true" signature="beforesuie()[pri:0, instance:runner.TestRunner@7d3a22a9]" started-at="2021-04-24T17:01:18 ICT" name="beforesuie" finished-at="2021-04-24T17:01:19 ICT" duration-ms="332" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforesuie -->
+        <test-method signature="checkPOI()[pri:0, instance:runner.TestRunner@7d3a22a9]" started-at="2021-04-24T17:01:19 ICT" name="checkPOI" finished-at="2021-04-24T17:01:36 ICT" duration-ms="17035" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- checkPOI -->
+        <test-method is-config="true" signature="writeTCResult(org.testng.ITestResult)[pri:0, instance:runner.TestRunner@7d3a22a9]" started-at="2021-04-24T17:01:36 ICT" name="writeTCResult" finished-at="2021-04-24T17:01:36 ICT" duration-ms="5" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[[TestResult name=checkPOI status=SUCCESS method=TestRunner.checkPOI()[pri:0, instance:runner.TestRunner@7d3a22a9] output={null}]]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- writeTCResult -->
+      </class> <!-- runner.TestRunner -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>
