@@ -2,6 +2,8 @@ package untils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -15,7 +17,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelUtils {
 
-	
 	public static Workbook newWorkbook(String filePath, String fileName) throws IOException {
 		File file = new File(filePath + "//" + fileName);
 		FileInputStream inputStream = new FileInputStream(file);
@@ -28,15 +29,15 @@ public class ExcelUtils {
 		}
 		return wb;
 	}
-	
+
 	public static ArrayList<String> readExcelFileAtColumn(String filePath, String fileName, String sheetName,
-			int column)  {
+			int column) {
 		ArrayList<String> columnData = new ArrayList<String>();
 		try {
 			Workbook wb = newWorkbook(filePath, fileName);
 			Sheet sheet = wb.getSheet(sheetName);
-			
-			//lay khoang row co data
+
+			// lay khoang row co data
 			int rowCount = sheet.getLastRowNum() - sheet.getFirstRowNum();
 			for (int i = 0; i < rowCount + 1; i++) {
 				try {
@@ -53,11 +54,10 @@ public class ExcelUtils {
 			// TODO: handle exception
 			System.out.println("Cannot read data at column:" + column);
 		}
-		
+
 		return columnData;
 	}
-	
-	
+
 	public static ArrayList<String> readExcelFileAtRow(String filePath, String fileName, String sheetName, int row,
 			int startColumn, int endColumn) {
 		ArrayList<String> rowData = new ArrayList<String>();
@@ -82,15 +82,14 @@ public class ExcelUtils {
 		return rowData;
 	}
 
-
-	public static String getDataAtCell(String filePath, String fileName, String sheetName, int row, int column)			 {
+	public static String getDataAtCell(String filePath, String fileName, String sheetName, int row, int column) {
 		String CellData;
 		try {
 			Workbook wb = newWorkbook(filePath, fileName);
-			
+
 			Sheet sheet = wb.getSheet(sheetName);
 			// in excel row index from 0 -> n
-			Row rowExcel = sheet.getRow(row );
+			Row rowExcel = sheet.getRow(row);
 			Cell cell = rowExcel.getCell(column);
 			cell.setCellType(CellType.STRING);
 			CellData = cell.getStringCellValue();
@@ -100,5 +99,41 @@ public class ExcelUtils {
 		return CellData;
 	}
 
+	
+	
+	public static void writeData(String filePath, String fileName, String sheetName, String value, int irow, int icol) {
 
+		try {
+
+			FileInputStream file = new FileInputStream(new File(filePath + "//" + fileName)); //de doc thoi
+
+			Workbook workbook = null;
+			String fileExtensionName = fileName.substring(fileName.indexOf("."));
+			if (fileExtensionName.equalsIgnoreCase(".xlsx")) {
+				workbook = new XSSFWorkbook(file);
+			} else if (fileExtensionName.equalsIgnoreCase(".xls")) {
+				workbook = new HSSFWorkbook(file);
+			}
+
+			Sheet sheet = workbook.getSheet(sheetName);//sheet can ghi
+
+			// Update the value of cell
+
+			Row row = sheet.getRow(irow);
+			row.createCell(icol).setCellValue(value);
+
+			file.close();
+
+			FileOutputStream outFile = new FileOutputStream(new File(filePath + "//" + fileName));  //de save data 
+
+			workbook.write(outFile);  //ctrl +s 
+			outFile.close();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
 }

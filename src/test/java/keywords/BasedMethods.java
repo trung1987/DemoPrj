@@ -4,13 +4,18 @@ import java.io.File;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.InvalidArgumentException;
 import org.openqa.selenium.JavascriptException;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.asserts.SoftAssert;
 
 import com.aventstack.extentreports.ExtentTest;
@@ -27,7 +32,7 @@ public class BasedMethods {
 		driver = globalDriver;
 	}
 	
-	protected void inputText(String elementXpath, String sValue, ExtentTest log) {
+	public void inputText(String elementXpath, String sValue, ExtentTest log) {
 		WebElement element = driver.findElement(By.xpath(elementXpath));
 		element.clear();
 		element.sendKeys(sValue);
@@ -40,7 +45,7 @@ public class BasedMethods {
 		
 	}
 
-	protected void clickElement(String elementXpath, ExtentTest log) {
+	public void clickElement(String elementXpath, ExtentTest log) {
 		WebElement element = driver.findElement(By.xpath(elementXpath));
 		System.out.println("Click on " + checkEmpty(element));
 		log.info("Click on " + checkEmpty(element));
@@ -59,9 +64,39 @@ public class BasedMethods {
 	}
 
 	public void goToUrl(String url, ExtentTest log) {
-		driver.get(url);
-		System.out.println("Go to: " + url);
-		log.info("Go to url: " + url);
+		try {
+			driver.get(url);
+			System.out.println("Go to: " + url);
+			log.info("Go to url: " + url);
+		} catch (InvalidArgumentException e) {
+			// TODO: handle exception
+			System.out.print("please check url");
+		}
+		
+		
+	}
+	
+	
+	public void waituntilClickable(String xpath) {
+		WebDriverWait wait = new WebDriverWait(driver, 10);			//co hieu luc 10s
+		
+		wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath))) ;	//sau 10s chua click dc throw timeout
+		
+		driver.findElement(By.xpath(xpath)).click();
+	}
+	
+	public void accept_Alert() {
+		try {
+			Alert alert = driver.switchTo().alert();  //case  no alert : throw exception
+			
+			String str = alert.getText();
+			alert.accept();
+			System.out.println("+ Accept Alert " + str);
+		} catch (NoAlertPresentException e) {
+			System.out.println("no alert ");
+		}
+		
+		
 	}
 	
 	// Screenshot method

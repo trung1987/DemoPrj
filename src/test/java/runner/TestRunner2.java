@@ -17,9 +17,7 @@ import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import org.testng.asserts.SoftAssert;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -34,61 +32,35 @@ import keywords.BasedMethods;
 import untils.ExcelUtils;
 
 
-public class TestRunner {
+public class TestRunner2 {
 	//String filePath, String fileName, String sheetName, int row,	int startColumn, int endColumn
 	
 	String filepath = System.getProperty("user.dir")+ File.separator + "Test_input";
 	String fileName = "TestCaseDemo.xls";
 	WebDriver driver=null;
-	BasedMethods actions;
 	
-	String sCurrentSheet="";
+	ExtentReports extent ;
+	ExtentSparkReporter spark ;
+	ExtentTest log;
 	String TestCaseName = "";
+	BasedMethods action;
+	boolean isPassed = true;
 	String browserName  ="";
 	int col =0;
+	String sCurrentSheet="";
 	int row=0;
 	
-	//log
-	ExtentReports extent;	// dang ky dung extent report: quan ly kq, tao new testcase rp...
-	ExtentSparkReporter spark; // tao moi file html
-	ExtentTest log; // ghi log
-	
-	
-	
-	@BeforeTest // 1. chay truoc va co id driver
-	public void setUp() {
-		// khoi tao report
+	@BeforeSuite
+	public  void beforesuie() {
+		File f = new File(System.getProperty("user.dir")+"/htmlReport");
+		if (!f.exists()) {
+			f.mkdirs();
+		}
 		extent = new ExtentReports();
-		spark = new ExtentSparkReporter(System.getProperty("user.dir")
-				+ File.separator + "HtmlReport" + File.separator + "testReport.html");
-		
-		extent.attachReporter(spark); // thong bao park ket qua report
+		spark =  new ExtentSparkReporter(
+				System.getProperty("user.dir")+ File.separator+"htmlReport"+ File.separator+ "Spark.html");
+		extent.attachReporter(spark);
 	}
-	
-	
-	@AfterMethod
-	public void writeTCResult(ITestResult rs) {
-		if (rs.getStatus() == ITestResult.SUCCESS ) {
-			//log.pass(rs.getName() + " is PASSED");
-			log.pass(MarkupHelper.createLabel(TestCaseName+ "is PASSED", ExtentColor.GREEN));
-		}
-		else if (rs.getStatus() == ITestResult.FAILURE ){
-			//log.fail(rs.getName() + " is FAILED");
-			log.fail(MediaEntityBuilder.createScreenCaptureFromPath(screenshot()).build());
-			log.fail(MarkupHelper.createLabel(TestCaseName + "is FAILED", ExtentColor.RED));
-			log.fail(rs.getThrowable());
-			extent.flush();
-			ExcelUtils.writeData(filepath, fileName, sCurrentSheet,"Failed" , row, col);
-			driver.close();
-		}
-		else {
-			//log.skip(rs.getName() + "is SKIPPED");
-			log.skip(MarkupHelper.createLabel(TestCaseName + "is SKIPPED", ExtentColor.YELLOW));
-			log.fail(rs.getThrowable());
-		}
-	}
-	
-	
 	
 	@Test
 	public void checkPOI() {
@@ -131,6 +103,7 @@ public class TestRunner {
 						String value = details.get(DataCommons.Testcase_ByValue_COL_NUM);
 										
 						
+						
 						executeKeyword(TestCaseName, teststep, xpath,value);
 						
 						
@@ -142,22 +115,29 @@ public class TestRunner {
 	}
 
 	
+	
 	public void executeKeyword(String TestCaseName, String keyword, String xpath, String Value) {
+		
+		
 		
 		switch (keyword) {
 			case "StartTestCase()":
 				System.out.println("start test case with browser " + browserName );
-				log = extent.createTest(TestCaseName + "_run with_"+ browserName);
+				log = extent.createTest(TestCaseName+"_RunWith_"+browserName );
+				if (driver != null) {
+					driver.close();
+				}
 				break;
 			case "OpenBrowser()":
 				System.out.println(" create new browser " + browserName);
+				
 				
 				switch (browserName) {
 					case "chrome":
 						WebDriverManager.chromedriver().setup();
 						driver = new ChromeDriver();
 						System.out.println("=== Using Chrome ===");
-						col = DataCommons.Testcase_ResultChrome_COL_NUM; // lay duoc col result browser dang chay
+						col = DataCommons.Testcase_ResultChrome_COL_NUM;
 						break;
 					case "ff": case "firefox":
 						WebDriverManager.firefoxdriver().setup();
@@ -174,30 +154,18 @@ public class TestRunner {
 					}
 				
 				driver.manage().window().maximize();
-				actions = new BasedMethods(driver);
-				//basemethod
-				log.info("Open browser " + browserName);  //html report
-				
-				//log xuong excel
-				ExcelUtils.writeData(filepath, fileName, sCurrentSheet,"Passed" , row, col);
-				
-				break;
-			case "GotoURL(Value)":
-				actions.goToUrl(Value, log);
+				action = new BasedMethods(driver);
 				ExcelUtils.writeData(filepath, fileName, sCurrentSheet, "Passed", row, col);
-				
-				break;	
-				
-				
-			case "EnterText(FindElementBy,Value)":
-				actions.inputText(xpath, Value, log);
 				break;
-		
-				
+			case "GotoURL()":
+				System.out.println(" got to url" + Value);
+				action.goToUrl(Value, log);
+				ExcelUtils.writeData(filepath, fileName, sCurrentSheet, "Passed", row, col);
+				break;	
 			case "EndTestCase()":
 				System.out.println("end test case : save extent report");
 				extent.flush();
-				driver.close();
+				
 				break;	
 			default:
 				break;
@@ -205,7 +173,33 @@ public class TestRunner {
 		
 	}
 
+
+	@AfterMethod
+	public void writeTCResult(ITestResult rs) {
+		if (rs.getStatus() == ITestResult.SUCCESS && isPassed == true) {
+			//log.pass(rs.getName() + " is PASSED");
+			log.pass(MarkupHelper.createLabel(TestCaseName + "is PASSED", ExtentColor.GREEN));
+		}
+		else if (rs.getStatus() == ITestResult.FAILURE || isPassed == false){
+			//log.fail(rs.getName() + " is FAILED");
+			log.fail(MediaEntityBuilder.createScreenCaptureFromPath(screenshot()).build());
+			log.fail(MarkupHelper.createLabel(TestCaseName + "is FAILED", ExtentColor.RED));
+			log.fail(rs.getThrowable());
+			extent.flush();
+			ExcelUtils.writeData(filepath, fileName, sCurrentSheet, "Failed", row, col);
+			driver.close();
+		}
+		else {
+			//log.skip(rs.getName() + "is SKIPPED");
+			log.skip(MarkupHelper.createLabel(TestCaseName + "is SKIPPED", ExtentColor.YELLOW));
+			log.fail(rs.getThrowable());
+		}
+	}
 	
+	//@AfterTest
+	public void teardown() {
+		if(driver!=null) driver.close();
+	}
 	protected String screenshot() {
 		int rd = new Random().nextInt();
 		String imgName = "screenshot" + rd + ".png";
@@ -221,5 +215,4 @@ public class TestRunner {
 
 		return "." + File.separator + imgName;
 	}
-
 }
